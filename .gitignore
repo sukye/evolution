@@ -1,12 +1,69 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
+// to understand how the aneurysms evolve with size.
+// by Jian Su, Jun 5, 2012
+// updated: Jun 5, 2012
 
-# Compiled Dynamic libraries
-*.so
+#include <stdio.h>
+#include "ran2.c"
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
+#define sizemax 10
+#define normlarger 0.06  // sizemax*normlarger < 1 for linear definition of larger[].
+#define normsmaller 0.01
+#define initial 100
+#define stepmax 21
+
+int main()
+{
+  int size; 
+	int number[sizemax+1],tmp[sizemax+1];//1:sizemax. no further generation @ 1, no evolution @ sizemax.
+	double larger[sizemax],smaller[sizemax];
+	int step;
+
+	int i,aneu[initial],final=0;
+	long sx=time(NULL)-1262900000;
+
+	for(size=0;size<sizemax+1;size++)
+	{
+		larger[size] = normlarger*size;
+		smaller[size] = normsmaller;//1-0.1*normsmaller*size;  //smaller[]+larger[]<1
+		number[size] = 0;
+		printf("%d\t%8.3lf\t%8.3lf\n",size,larger[size],smaller[size]);
+	}
+	
+/***********************************************/
+//aneurysm number is conserved. 
+
+	for(i=0;i<initial;i++)
+	{
+		aneu[i] = 1; // start from 1mm.
+	} 
+
+	for(step=1;step<stepmax+1;step++)
+	{
+		for(i=0;i<initial;i++)
+		{
+			if (aneu[i]<sizemax && aneu[i]>0)
+		  {	if (ran2(&sx)<larger[aneu[i]]) aneu[i] ++; 
+			else if (ran2(&sx)>1-smaller[aneu[i]]) aneu[i] --;
+			else {}
+		  }
+		} 
+	}
+
+	for(i=0;i<initial;i++)
+	{
+//		printf("%d\t",aneu[i]);
+		number[aneu[i]] ++;
+	} 
+
+	for(size=0;size<sizemax+1;size++)
+	{
+		printf("%d\t%d\n",size,number[size]);
+		final += number[size];
+	}
+
+	printf("total: %d\n",final);
+
+/***********************************************/
+	return 0;
+
+}
